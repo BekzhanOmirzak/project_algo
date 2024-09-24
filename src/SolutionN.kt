@@ -26,18 +26,18 @@ fun main() {
     }
 
     val paths = mutableListOf<String>()
-    dfs(0, root, paths)
+    dfsOr(0, root, paths)
 
     for (p in paths)
         println(p)
 }
 
-fun dfs(level: Int, at: TreeMapNode, paths: MutableList<String>) {
+fun dfsOr(level: Int, at: TreeMapNode, paths: MutableList<String>) {
     val keys = at.children.keys.sorted()
     for (k in keys) {
         val value = " ".repeat(level) + k
         paths.add(value)
-        dfs(level + 2, at.children[k]!!, paths)
+        dfsOr(level + 2, at.children[k]!!, paths)
     }
 }
 

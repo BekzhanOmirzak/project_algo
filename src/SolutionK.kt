@@ -1,5 +1,9 @@
+import utils.aho.AhoCorasick
 import java.util.*
 import kotlin.Comparator
+import kotlin.collections.HashMap
+import kotlin.math.cos
+import kotlin.math.min
 
 private val mod = Math.pow(10.0, 9.0).toInt() + 7
 private val dirs = arrayOf(
@@ -17,6 +21,85 @@ private fun convertStrToList(str: String) = str.split(" ").map { it.toInt() }
 fun main() {
 
     println(
+        minimumCost(
+            "abc",
+            arrayOf("a", "b", "c", "ab"),
+            intArrayOf(3, 14, 10, 1)
+        )
+    )
+
+}
+
+fun minimumCost(target: String, words: Array<String>, costs: IntArray): Int {
+
+    val aho = AhoCorasick()
+    for (i in 0 until words.size) {
+        aho.addPattern(words[i], costs[i])
+    }
+
+    aho.buildFailureLink()
+    val resAho = aho.search(target)
+    val strMap = hashMapOf<Int, MutableList<AhoCorasick.StringPos>>()
+
+    for (i in resAho) {
+        if (strMap[i.start] == null)
+            strMap[i.start] = mutableListOf()
+        strMap[i.start]!!.add(i)
+    }
+
+    val memo = HashMap<Int, Int>()
+    val res = dpExplore(0, target, strMap, memo)
+    if (res == Int.MAX_VALUE)
+        return -1
+    return res
+}
+
+fun dpExplore(
+    at: Int,
+    target: String,
+    strMap: HashMap<Int, MutableList<AhoCorasick.StringPos>>,
+    memo: HashMap<Int, Int>
+): Int {
+    if (at >= target.length)
+        return 0
+    if (memo.containsKey(at))
+        return memo[at]!!
+    var min = Int.MAX_VALUE
+
+    for (next in strMap[at] ?: emptyList()) {
+        val res = dpExplore(next.start + next.str.length, target, strMap, memo)
+        if (res != Int.MAX_VALUE) {
+            min = min(min, res + next.cost)
+        }
+    }
+
+    memo[at] = min
+    return min
+}
+
+fun dpExplore(prevPrev: Int, prev: Int, at: Int, arr: IntArray): Int {
+    if (at == arr.size)
+        return 0
+
+    if (prev == 1 && prevPrev == 1) {
+        return arr[at] + dpExplore(1, 0, at + 1, arr)
+    } else if (prevPrev == 0 && prev == 1) {
+        var take = arr[at] + dpExplore(1, 0, at + 1, arr)
+        if (at - 1 >= 0) {
+            take += arr[at - 1]
+        }
+
+        var skip = dpExplore(1, 1, at + 1, arr)
+
+        return maxOf(take)
+    }
+
+    return 0
+}
+
+fun maximumScore(grid: Array<IntArray>): Long {
+
+    println(
         maximumScore(
             arrayOf(
                 intArrayOf(0, 0, 0, 0, 0),
@@ -27,11 +110,6 @@ fun main() {
             )
         )
     )
-
-}
-
-fun maximumScore(grid: Array<IntArray>): Long {
-
 
     return 0L
 }
@@ -759,31 +837,6 @@ fun canAliceWin(nums: IntArray): Boolean {
     if (single == double) return false
 
     return true
-}
-
-
-fun minChanges(nums: IntArray, k: Int): Int {
-
-    println(minChanges(intArrayOf(1, 0, 1, 2, 4, 3), 4))
-
-    val set = mutableSetOf<Int>()
-    for (i in 0 until nums.size / 2) {
-        val a = nums[i]
-        val b = nums[nums.size - 1 - i]
-        val abs = Math.abs(a - b)
-        set.add(abs)
-    }
-
-    val sorted = set.toSortedSet().toList()
-    var ans = Int.MAX_VALUE
-    var l = 0
-    var r = sorted.size - 1
-    while (l <= r) {
-        val mid = (l + r) / 2
-
-    }
-
-    return ans
 }
 
 private fun countChanges(
